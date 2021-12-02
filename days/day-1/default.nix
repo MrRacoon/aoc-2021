@@ -8,7 +8,7 @@ let
 in
 {
   "Part1" = pipe ./input.txt [
-    readFile
+    (readFile)
     (splitString "\n")
     (filter (x: stringLength x > 0))
     (map toInt)
@@ -17,11 +17,11 @@ in
     (length)
   ];
   "Part2" = pipe ./input.txt [
-    readFile
+    (readFile)
     (splitString "\n")
     (filter (x: stringLength x > 0))
     (map toInt)
-    tripleZip
+    (tripleZip)
     (xs: zipListsWith (x: y: y - x) xs (tail xs))
     (filter (x: x > 0))
     (length)
