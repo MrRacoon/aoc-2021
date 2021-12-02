@@ -2,7 +2,7 @@
 let
   pkgs = (import <nixpkgs> {});
   inherit (builtins) readFile map length elemAt;
-  inherit (pkgs.lib) pipe splitString filter stringLength tail zipListsWith toInt foldr;
+  inherit (pkgs.lib) pipe splitString filter stringLength tail zipListsWith toInt foldl;
 
   input = readFile ./input.txt;
 in
@@ -11,9 +11,9 @@ in
     let
       initPoint = { x = 0; y = 0; };
       ops = {
-        forward = d: { x, y }: { x = x + d; y = y; };
-        down = d: { x, y }: { x = x; y = y + d; };
-        up = d: { x, y }: { x = x; y = y - d; };
+        down = { x, y }: d: { x = x; y = y + d; };
+        up = { x, y }: d: { x = x; y = y - d; };
+        forward = { x, y }: d: { x = x + d; y = y; };
       };
     in
     pipe input [
@@ -21,7 +21,7 @@ in
       (map (line: splitString " " line))
       (filter (as: (length as) > 1))
       (map (as: { op = (elemAt as 0); d = (toInt (elemAt as 1)); }))
-      (foldr ({ op, d }: agg: ops."${op}" d agg) initPoint)
+      (foldl (agg: { op, d }: ops."${op}" agg d) initPoint)
       (final: { inherit (final) x y; answer = final.x * final.y; })
     ];
   "Part2" =
@@ -36,9 +36,19 @@ in
       '';
       initPoint = { x = 0; y = 0; a = 0; };
       ops = {
-        forward = d: { x, y, a }: { inherit a; x = x + d; y = y + (a * d); };
-        down = d: { x, y, a }: { inherit x y; a = a + d; };
-        up = d: { x, y, a }: { inherit x y; a = a - d; };
+        down = { x, y, a }: d: {
+          inherit x y;
+          a = a + d;
+        };
+        up = { x, y, a }: d: {
+          inherit x y;
+          a = a - d;
+        };
+        forward = { x, y, a }: d: {
+          inherit a;
+          x = x + d;
+          y = y + (a * d);
+        };
       };
     in
       pipe input [
@@ -46,7 +56,7 @@ in
         (map (line: splitString " " line))
         (filter (tuple: (length tuple) > 1))
         (map (tuple: { op = (elemAt tuple 0); d = (toInt (elemAt tuple 1)); }))
-        (foldr ({ op, d }: agg: ops."${op}" d agg) initPoint)
-        ({ x, y, a }: { inherit a x y; answer = (x * y); })
+        (foldl (agg: { op, d }: ops."${op}" agg d) initPoint)
+        (final: { inherit (final) x y; answer = final.x * final.y; })
       ];
 }
