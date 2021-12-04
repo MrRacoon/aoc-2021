@@ -1,4 +1,3 @@
-
 let
   pkgs = (import <nixpkgs> {});
   inherit (builtins) readFile map length elemAt;
